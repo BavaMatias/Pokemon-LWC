@@ -1,0 +1,132 @@
+global class BatchPokemon implements Database.Batchable<Integer>, Database.AllowsCallouts, Database.Stateful{
+    
+    public List<Integer> counter;
+    public BatchPokemon(List<Integer> counter){
+        this.counter = counter;
+    }
+    
+    global List<Integer> start(Database.BatchableContext bc) { 
+        return counter;
+    }
+    
+    global void execute(Database.BatchableContext bc, List<integer> scope){
+    
+        Http http = new Http();
+        HttpRequest request = new HttpRequest();
+        request.setEndpoint('https://pokeapi.co/api/v2/pokemon/'+scope[0]);
+        request.setMethod('GET');
+        HttpResponse response = Http.send(request);
+		//creo nuevo pokemon.
+        Pokemon__c poke = new Pokemon__c();
+        
+        
+        if(response.getStatusCode() == 200){
+            Map<String,Object> result = (Map<String,Object>) json.deserializeUntyped(response.getBody());         
+            //extid
+            poke.ExtId__c = (Integer) result.get('id');
+            //nombre
+            poke.Name = (String) result.get('name');
+            //numero
+            poke.Numero_de_Pokemon__c = (Integer) result.get('id');
+            //altura
+            Double height = (Double) result.get('height');            
+            poke.Altura__c = height/10 + ' Mts.';
+            //peso
+            Double weigth = (Double) result.get('weight');
+            poke.Peso__c = weigth/10 + ' Kgs.';
+            //estadisticas (hp/ataque/defensa/velocidad)            
+            List<Object> statsList = (List<object>) result.get('stats');
+            Map<String,Object> statsMap = new Map<String,Object>();
+            List<String> stats = new List<String>();
+            for (Object statsFilter : statsList){
+                statsMap = (Map<String,Object>) statsFilter;
+                stats.add(String.valueOf(statsMap.get('base_stat')));
+            }
+            poke.Vida__c = stats[0];
+            poke.Ataque__c = stats[1];
+            poke.Defensa__c = stats[2];
+            poke.Velocidad__c = stats[5];
+            //imagen
+            Map<String,Object> sprite = (Map<String,Object>) result.get('sprites');
+            poke.Imagen__c = (String) sprite.get('front_default');
+            //tipos
+            List<object> jsonTypes = (List<Object>) result.get('types');
+            map<String,Object> jsonTypeMap = new Map<String,Object>();
+            List<Object> jsonTypeList = new List<Object>();
+            for (Object filterJson : jsonTypes){
+                jsonTypeMap = (Map<String,Object>) filterJson;
+                jsonTypeList.add(jsonTypeMap.get('type'));
+            }
+            Map<String,Object> typeMap = new Map<String,Object>();
+            List<String> types = new List<String>();
+            for  (Object filterTypes : jsonTypeList){
+                typeMap = (Map<String,Object>) filterTypes;
+                types.add(String.valueOf(typeMap.get('name')));
+            }
+            String namesPicklist = String.join(types, ';');
+            poke.Tipos__c = namesPicklist;
+            //habilidad
+            List<Object> jsonHabilities = (List<Object>) result.get('abilities');
+            Map<String,Object> jsonHabilitiesMap = new Map<String,Object>();
+            List<Object> jsonHabilitiesList = new List<Object>();
+            for (Object filterJsonHabilities: jsonHabilities){
+                jsonHabilitiesMap = (Map<String,Object>)filterJsonHabilities;
+                jsonHabilitiesList.add(jsonHabilitiesMap.get('ability'));
+            }
+            Map<String,Object> habilitiesMap = new Map<String,Object>();
+            List<String> habilitiesList = new List<String>();
+            for (Object filerHabilities : jsonHabilitiesList){
+                habilitiesMap = (Map<String,Object>) filerHabilities;
+                habilitiesList.add(String.valueOf(habilitiesMap.get('name')));
+            }
+            Habilidad__c habilities = new Habilidad__c();
+            habilities = [SELECT Id, Name FROM habilidad__C WHERE Name IN :habilitiesList LIMIT 1];
+            poke.Habilidad__c = habilities.Id;
+            //movimientos
+            List<Object> jsonMovementsList = (List<Object>)result.get('moves');
+            Map<String,Object> jsonMovementsMap = new Map<String,Object>();
+            List<Object> jsonMovements = new List<Object>();
+            for (Object filterJsonMovements : jsonMovementsList){
+                jsonMovementsMap = (Map<String,Object>) filterJsonMovements;
+                jsonMovements.add(jsonMovementsMap.get('move'));
+            }
+            Map<String,Object> movementsMap = new Map<String,Object>();
+            List<String> movementsList = new List<String>();
+            for (Object filterMovements : jsonMovements){
+                movementsMap = (Map<String,Object>) filterMovements;
+                movementsList.add(String.valueof(movementsMap.get('name')));
+            }
+            List<Movimiento__c> movimientos = [SELECT Id FROM Movimiento__c WHERE Name = :movementsList LIMIT 4];
+            Integer size = movimientos.size();
+            poke.Slot1__c = movimientos[0].Id;
+            if (size > 1){
+                poke.Slot2__c = movimientos[1].Id;
+            }
+            if (size > 2){
+            	poke.Slot3__c = movimientos[2].Id;
+            }
+            if (size > 3){
+            	poke.Slot4__c = movimientos[3].Id;
+            }
+            
+            //inserto el objeto en la base de datos.
+            insert poke;
+        }
+        
+        else
+            system.debug('error.');
+    
+    }
+    global void finish(Database.BatchableContext bc){
+        system.debug('termino');
+    }
+}
+
+
+/*List<Integer> startList = new List<Integer>();
+for (Integer counter = 1 ; counter < 50 ; counter++){
+    startList.add(counter);
+}
+
+BatchPokemon batch = new BatchPokemon(startList);
+database.executeBatch(batch, 1);*/

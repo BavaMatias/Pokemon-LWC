@@ -1,0 +1,53 @@
+@istest
+public class BatchPokimonTest {
+    @istest 
+    public static void batchTest(){
+        Test.setMock(HttpCalloutMock.class, new BatchPokimonMock());
+        Habilidad__c habilidadGetId = new Habilidad__c();
+        HabilidadGetId.Name = 'chlorophyll';
+        
+        insert habilidadGetId;
+		
+        List<Movimiento__c> movementsIdList = new List<Movimiento__c>();
+        Movimiento__C slot1 = new Movimiento__C();
+        slot1.name = 'vine-whip';
+        movementsIdList.add(slot1);
+        Movimiento__C slot2 = new Movimiento__C();
+        slot2.name = 'round';
+        movementsIdList.add(slot2);
+        Movimiento__C slot3 = new Movimiento__C();
+        slot3.name = 'take-down';
+        movementsIdList.add(slot3);
+        Movimiento__C slot4 = new Movimiento__C();
+        slot4.name = 'double-team';
+        movementsIdList.add(slot4);
+        insert movementsIdList;
+        
+        Test.startTest();
+        List<Integer> StartList = new List<Integer>();
+		StartList.add(1);
+		BatchPokemon batch = new BatchPokemon(StartList);
+        database.executeBatch(batch, 1);
+        Test.stopTest();
+        
+        Pokemon__c pokemon = [SELECT Name, Altura__c, Ataque__c, Defensa__c, ExtId__c, Generacion__c, Habilidad__c, Imagen__c, Numero_de_Pokemon__c, Peso__c, Slot1__c, Slot2__c, Slot3__c, Slot4__c, Tipos__c, Velocidad__c, Vida__c
+                             FROM Pokemon__c];
+        system.assertEquals('bulbasaur' , pokemon.Name);
+        system.assertEquals('0.7 Mts.' , pokemon.Altura__c);
+        system.assertEquals('49' , pokemon.Ataque__c);
+        system.assertEquals('49' , pokemon.Defensa__c);
+        system.assertEquals(1 , pokemon.ExtId__c);
+        system.assertEquals('1' , pokemon.Generacion__c);
+        system.assertEquals(habilidadGetId.Id , pokemon.Habilidad__c);
+        system.assertEquals('https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png' , pokemon.Imagen__c);
+        system.assertEquals(1 , pokemon.Numero_de_Pokemon__c);
+        system.assertEquals('6.9 Kgs.' , pokemon.Peso__c);
+        system.assertEquals(slot1.Id , pokemon.Slot1__c);
+        system.assertEquals(slot2.Id , pokemon.Slot2__c);
+        system.assertEquals(slot3.Id , pokemon.Slot3__c);
+        system.assertEquals(slot4.Id , pokemon.Slot4__c);
+        system.assertEquals('Poison;Grass' , pokemon.Tipos__c);
+        system.assertEquals('45' , pokemon.Velocidad__c);
+        system.assertEquals('45' , pokemon.Vida__c);
+    }
+}

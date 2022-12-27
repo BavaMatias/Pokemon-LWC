@@ -1,0 +1,10 @@
+@isTest
+global class BatchAbiltiesMock implements HttpCalloutMock {
+    global HTTPResponse respond(HTTPRequest request) {
+        HttpResponse response = new HttpResponse();
+        response.setHeader('Content-Type', 'application/json');
+        response.setBody('{"name":"stench","id":1,"effect_entries":[{"effect":"Attacken die Schaden verursachen haben mit jedem Treffer ein","language":{"name":"de","url":"https://pokeapi.co/api/v2/language/6/"},"short_effect":"Mit jedem Treffer besteht eine 10% Chance das Ziel zurückschrecken zu lassen."},{"effect":"This Pokémons damaging moves have a 10% chance to make the target flinch with each hit if they do not already cause flinching as a secondary effect.nnThis ability does not stack with a held item.nnOverworld: The wild encounter rate is halved while this Pokémon is first in the party.","language":{"name":"en","url":"https://pokeapi.co/api/v2/language/9/"},"short_effect":"Has a 10% chance of making target Pokémon flinch with each hit."}]}');
+        response.setStatusCode(200);
+        return response; 
+    }
+}

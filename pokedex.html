@@ -1,0 +1,63 @@
+<template>
+    <lightning-card title="Pokemons" icon-name="utility:animal_and_nature">
+        <div class="slds-card__body slds-card__body_inner">
+                <template if:true={pokeList.data}>
+                    <div class="poke-card">
+                        <div class="dualbox">
+                            <b>Tipos</b>
+                            <lightning-dual-listbox
+                                name="tipo"
+                                max="2"
+                                source-label="Disponibles"
+                                selected-label="Seleccionados"
+                                options={TipoPickListValues}
+                                onchange={handleTipoChange}>
+                            </lightning-dual-listbox>
+                        </div>                                                      
+                        <div class="list">
+                            <b>Nombre</b>
+                            <lightning-input 
+                                type="nombre"
+                                variant="standard"
+                                name="nombre"
+                                value={caseNumber}
+                                placeholder="Introduzca el Nombre del Pokemon..."
+                                onkeyup={handleKeyUp}>
+                            </lightning-input> 
+                            <br>
+                            <b>Generacion</b>
+                            <lightning-combobox 
+                                name="generacion"
+                                value={value}
+                                placeholder="Seleccione la Generacion del Pokemon..."
+                                options={genOptions}
+                                onchange={handleGeneracionChange} >
+                            </lightning-combobox>
+                            <br>
+                            <p><b>{pokeSized.data}</b> Pokemons Encontrados.</p>
+                        </div>
+                    </div>
+                <lightning-layout multiple-rows="true" pull-to-boundary="small">
+                    <template for:each={pokeList.data} for:item="pokemon">
+                        <lightning-layout-item key={pokemon.Numero_de_Pokemon__c} size="3" class="slds-var-p-around_x-small" >
+                            <lightning-card style="width:500px" title={pokemon.Name} class="poke-tile">
+                                <div class="slds-var-p-horizontal_small poke-tile-body"  >
+                                    <div class="slds-media">
+                                        <div class="slds-media__figure">
+                                            <img src={pokemon.Imagen__c} alt="poke profile" onclick={navigateToObjectPokemon} name={pokemon.Id}/>
+                                        </div>
+                                        <div class="slds-media__body">
+                                            <p align="center" class="sslds-text-body_medium"><b>Numero de Pokemon:</b> {pokemon.Numero_de_Pokemon__c}</p>
+                                            <p align="center" class="sslds-text-body_medium"><b>Generacion:</b> {pokemon.Generacion__c}</p>
+                                            <p align="center" class="sslds-text-body_medium"><b>Tipos:</b> {pokemon.Tipos__c}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </lightning-card>
+                         </lightning-layout-item>
+                     </template>
+                </lightning-layout>
+             </template>
+        </div>
+    </lightning-card>
+</template>

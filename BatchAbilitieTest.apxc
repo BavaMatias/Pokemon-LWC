@@ -1,0 +1,19 @@
+@istest
+public class BatchAbilitiesTest {
+    @istest
+    public static void batchTest(){
+        Test.setMock(HttpCalloutMock.class, new BatchAbiltiesMock());
+        
+        Test.startTest();
+        list<integer> startList = new list<integer>();
+		startList.add(1);
+		BatchAbilities batch = new BatchAbilities(startList);
+        database.executeBatch(batch, 1);
+        Test.stopTest();
+        
+        Habilidad__c habilidad = [SELECT Name, Efecto__c, ExtId__c FROM Habilidad__c];
+        system.assertEquals( 'stench' , habilidad.Name);
+        system.assertEquals( 'Has a 10% chance of making target Pokémon flinch with each hit.' , Habilidad.Efecto__c);
+        system.assertEquals( 1 , habilidad.Extid__c);
+    }
+}

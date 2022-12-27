@@ -1,0 +1,41 @@
+public with sharing class PokemonQuery {
+    @AuraEnabled(cacheable=true)
+    public static List<Pokemon__c> getPokemons(
+        String nombre,
+        String generacion,
+        string tipo
+
+    ) {
+        String query;
+        String condition = (String.isNotBlank(nombre)?'Name LIKE \''+'%' + nombre + '%\'':'');
+
+        condition += (String.isNotBlank(generacion)
+            ? (String.isNotBlank(condition)?+'AND':'') +' Generacion__c LIKE \'' +'%' +generacion +'%\'': '');
+
+        condition += (String.isNotBlank(tipo)
+            ? (String.isNotBlank(condition)?+'AND':'') +' Tipos__c INCLUDES ' + '(\'' +tipo +'\')':'');		 
+
+        System.debug('condition ' + condition);
+        if (String.isNotBlank(condition)) {
+            query =
+                'SELECT Generacion__c,Imagen__c,Name,Numero_de_Pokemon__c,Tipos__c FROM Pokemon__c WHERE ' +
+                condition +
+                ' ORDER BY Numero_de_Pokemon__c';
+        } else {
+            query = 'SELECT Generacion__c,Imagen__c,Name,Numero_de_Pokemon__c,Tipos__c FROM Pokemon__c ORDER BY Numero_de_Pokemon__c';
+        }
+
+        List<Pokemon__c> records = Database.query(query);
+        
+        return records;
+    }
+    
+    
+     @auraenabled(cacheable=true)
+    public static Integer pokeSize(String nombres, String generaciones, String tipos){
+        Integer pokeSizeList;
+        pokeSizeList = getPokemons(nombres,generaciones,tipos).size();
+        return pokeSizeList;
+        
+    }
+}

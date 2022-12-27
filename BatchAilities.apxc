@@ -1,0 +1,61 @@
+global class BatchAbilities implements Database.Batchable<integer>, Database.AllowsCallouts, Database.Stateful{
+    
+    Public List<Integer> counter;
+    Public BatchAbilities(List<Integer> counter){
+        this.counter = counter;
+    }
+    
+    global List<Integer> start(Database.BatchableContext bc) { 
+        return counter;
+    }
+    
+    global void execute(Database.BatchableContext bc, List<Integer> scope){
+        
+        Http http = new Http();
+        HttpRequest request = new HttpRequest();
+        request.setEndpoint ('https://pokeapi.co/api/v2/ability/'+scope[0]);
+        request.setMethod('GET');
+        HttpResponse response = Http.send(request);
+		//creo nuevo objeto habilidad.
+        Habilidad__c habilidad = new Habilidad__c();        
+        
+        if(response.getStatusCode() == 200){
+            Map<String,Object> result = (Map<String,Object>) json.deserializeUntyped(response.getBody());
+            
+            //nombre
+            habilidad.Name = (String) result.get('name');
+            //ExtId
+            habilidad.ExtId__c = (Integer) result.get('id');
+            //efecto
+            List<Object> habilitiesList = (List<Object>) result.get('effect_entries');
+            Map<String,Object> habilitiesMap = new Map<String,Object>();
+            List<String> hablilities = new List<String>();
+            for (Object o : habilitiesList){
+                habilitiesMap = (Map<String,Object>) o;
+                hablilities.add(String.valueOf(habilitiesMap.get('short_effect')));
+            }
+            if(habilidad.ExtId__c < 191)
+                habilidad.Efecto__c = hablilities[1];
+            if(habilidad.ExtId__c >=191 && habilidad.ExtId__c < 234) habilidad.Efecto__c =hablilities[0];
+            
+            //inserto el objeto en la base de datos.
+            insert habilidad;
+        }
+        else
+        	system.debug('error.');
+        
+    }
+    
+    
+    global void finish(Database.BatchableContext bc){
+        system.debug('termino');
+    }
+}
+
+/*List<Integer> startList = new List<Integer>();
+for (Integer counter = 1 ; counter < 268 ; counter++){
+    startList.add(i);
+}
+
+BatchAbilities batch = new BatchAbilities(startList);
+database.executeBatch(batch, 10);*/

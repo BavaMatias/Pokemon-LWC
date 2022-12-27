@@ -1,0 +1,10 @@
+@isTest
+global class NullMock implements HttpCalloutMock {
+    global HTTPResponse respond(HTTPRequest request) {
+        HttpResponse response = new HttpResponse();
+        response.setHeader('Content-Type', 'application/json');
+        response.setBody('{"accuracy":null,"id":null,"name":null,"effect_chance":null,"target":{"name":null,"url":null},"effect_entries":[{"effect":null,"language":{"name":null,"url":null},"short_effect":null}],"power":null,"type":{"name":null,"url":null}}');
+        response.setStatusCode(200);
+        return response; 
+    }
+}
